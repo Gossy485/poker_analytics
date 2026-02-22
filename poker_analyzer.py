@@ -9,7 +9,6 @@ from typing import Dict, List
 HAND_START_RE = re.compile(r"^Ignition Hand #(\d+)")
 TOTAL_POT_RE = re.compile(r"Total Pot\(\$(\d+(?:\.\d+)?)\)")
 MONEY_RE = re.compile(r"\$(\d+(?:\.\d+)?)")
-SEAT_LINE_RE = re.compile(r"^Seat\s+\d+\s*:\s*(.+?)\s*\(")
 
 
 @dataclass
@@ -92,11 +91,10 @@ def parse_hand_text(block: str) -> Hand | None:
 
     in_action_region = False
     for line in lines:
-        seat_match = SEAT_LINE_RE.match(line)
-        if seat_match:
-            name = seat_match.group(1).strip()
+        if line.startswith("Seat "):
+            name = line.split(":", 1)[1].split("(")[0].strip()
             hand.players.append(name)
-            if "[ME]" in name:
+            if "[ME]" in line:
                 hand.hero_name = name.replace("[ME]", "").strip()
 
         if "[ME]" in line and "Card dealt to a spot" in line:
